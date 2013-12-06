@@ -45,12 +45,18 @@
 #define DATATYPE_SP78         "sp78"
 
 // key values
-#define SMC_KEY_CPU_TEMP      "TC0D"
-#define SMC_KEY_FAN0_RPM_MIN  "F0Mn"
-#define SMC_KEY_FAN1_RPM_MIN  "F1Mn"
-#define SMC_KEY_FAN0_RPM_CUR  "F0Ac"
-#define SMC_KEY_FAN1_RPM_CUR  "F1Ac"
-
+#define SMC_KEY_CPU_HEATSINK_TEMP  "TC0H"
+#define SMC_KEY_GPU_HEATSINK_TEMP  "TG0D"
+#define SMC_KEY_FAN0_RPM_MIN       "F0Mn"
+#define SMC_KEY_FAN1_RPM_MIN       "F1Mn"
+#define SMC_KEY_FAN2_RPM_MIN       "F2Mn"
+#define SMC_KEY_FAN0_RPM_CUR       "F0Ac"
+#define SMC_KEY_FAN1_RPM_CUR       "F1Ac"
+#define SMC_KEY_FAN2_RPM_CUR       "F2Ac"
+#define SMC_KEY_FAN0_RPM_MAX       "F0Mx"
+#define SMC_KEY_FAN1_RPM_MAX       "F1Mx"
+#define SMC_KEY_FAN2_RPM_MAX       "F2Mx"
+#define GPU_THROTTLE_TEMP          "SGTT"
 
 typedef struct {
     char                  major;
