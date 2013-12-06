@@ -1,5 +1,5 @@
 
-CC     = cc
+CC     = gcc
 CFLAGS = -O2 -Wall
 INC    = -framework IOKit
 PREFIX = /usr/local
