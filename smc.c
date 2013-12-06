@@ -211,16 +211,6 @@ int main(int argc, char *argv[])
 
     printf("ODD: +%d%% +%d%%\n", minBoost, currentBoost);
 
-	defaultMin = 1100;
-	min = SMCGetFanRpm(SMC_KEY_FAN1_RPM_MIN);
-	max = SMCGetFanRpm(SMC_KEY_FAN1_RPM_MAX);
-	current = SMCGetFanRpm(SMC_KEY_FAN1_RPM_CUR);
-	defaultPercent = 100*(float)defaultMin/(float)max;
-	minBoost = 100*(float)(min-defaultMin)/(float)(max-defaultMin);
-	currentBoost = 100*(float)(current-defaultMin)/(float)(max-defaultMin) - minBoost;
-
-    printf("HDD: +%d%% +%d%%\n", minBoost, currentBoost);
-    
     defaultMin = 940;
 	min = SMCGetFanRpm(SMC_KEY_FAN2_RPM_MIN);
 	max = SMCGetFanRpm(SMC_KEY_FAN2_RPM_MAX);
