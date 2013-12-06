@@ -40,6 +40,21 @@ UInt32 _strtoul(char *str, int size, int base)
     return total;
 }
 
+float _strtof(char *str, int size, int e) {
+  float total = 0;
+  int i;
+
+  for (i = 0; i < size; i++) {
+    if (i == (size - 1))
+      total += (str[i] & 0xff) >> e;
+    else
+      total += str[i] << (size - 1 - i) * (8 - e);
+  }
+
+  return total;
+}
+
+
 void _ultostr(char *str, UInt32 val)
 {
     str[0] = '\0';
@@ -100,20 +115,11 @@ kern_return_t SMCCall(int index, SMCKeyData_t *inputStructure, SMCKeyData_t *out
     structureInputSize = sizeof(SMCKeyData_t);
     structureOutputSize = sizeof(SMCKeyData_t);
 
-    #if MAC_OS_X_VERSION_10_5
     return IOConnectCallStructMethod( conn, index,
                             // inputStructure
                             inputStructure, structureInputSize,
                             // ouputStructure
                             outputStructure, &structureOutputSize );
-    #else
-    return IOConnectMethodStructureIStructureO( conn, index,
-                                                structureInputSize, /* structureInputSize */
-                                                &structureOutputSize,   /* structureOutputSize */
-                                                inputStructure,        /* inputStructure */
-                                                outputStructure);       /* ouputStructure */
-    #endif
-
 }
 
 kern_return_t SMCReadKey(UInt32Char_t key, SMCVal_t *val)
@@ -167,10 +173,63 @@ double SMCGetTemperature(char *key)
     return 0.0;
 }
 
+int SMCGetFanRpm(char *key) {
+  SMCVal_t val;
+  kern_return_t result;
+
+  result = SMCReadKey(key, &val);
+  if (result == kIOReturnSuccess) {
+    // read succeeded - check returned value
+    if (val.dataSize > 0) {
+      if ((strcmp(val.dataType, DATATYPE_UINT8) == 0)
+          || (strcmp(val.dataType, DATATYPE_UINT16) == 0)
+          || (strcmp(val.dataType, DATATYPE_UINT32) == 0))
+        return (int) _strtoul(val.bytes, val.dataSize, 10);
+      else if (strcmp(val.dataType, DATATYPE_FPE2) == 0)
+        return (int) _strtof(val.bytes, val.dataSize, 2);
+    }
+  }
+  // read failed
+  return 0;
+}
+
 int main(int argc, char *argv[])
 {
     SMCOpen();
-    printf("%0.1f°C\n", SMCGetTemperature(SMC_KEY_CPU_TEMP));
+    printf("CPU: %0.1f°C\n", SMCGetTemperature(SMC_KEY_CPU_HEATSINK_TEMP));
+    printf("GPU: %0.1f°C\n", SMCGetTemperature(SMC_KEY_GPU_HEATSINK_TEMP));
+
+	int defaultMin, min, max, current, defaultPercent, minBoost, currentBoost;
+	
+	defaultMin = 1150;
+	min = SMCGetFanRpm(SMC_KEY_FAN0_RPM_MIN);
+	max = SMCGetFanRpm(SMC_KEY_FAN0_RPM_MAX);
+	current = SMCGetFanRpm(SMC_KEY_FAN0_RPM_CUR);
+	defaultPercent = 100*(float)defaultMin/(float)max;
+	minBoost = 100*(float)(min-defaultMin)/(float)(max-defaultMin);
+	currentBoost = 100*(float)(current-defaultMin)/(float)(max-defaultMin) - minBoost;
+
+    printf("ODD: +%d%% +%d%%\n", minBoost, currentBoost);
+
+	defaultMin = 1100;
+	min = SMCGetFanRpm(SMC_KEY_FAN1_RPM_MIN);
+	max = SMCGetFanRpm(SMC_KEY_FAN1_RPM_MAX);
+	current = SMCGetFanRpm(SMC_KEY_FAN1_RPM_CUR);
+	defaultPercent = 100*(float)defaultMin/(float)max;
+	minBoost = 100*(float)(min-defaultMin)/(float)(max-defaultMin);
+	currentBoost = 100*(float)(current-defaultMin)/(float)(max-defaultMin) - minBoost;
+
+    printf("HDD: +%d%% +%d%%\n", minBoost, currentBoost);
+    
+    defaultMin = 940;
+	min = SMCGetFanRpm(SMC_KEY_FAN2_RPM_MIN);
+	max = SMCGetFanRpm(SMC_KEY_FAN2_RPM_MAX);
+	current = SMCGetFanRpm(SMC_KEY_FAN2_RPM_CUR);
+	defaultPercent = 100*(float)defaultMin/(float)max;
+	minBoost = 100*(float)(min-defaultMin)/(float)(max-defaultMin);
+	currentBoost = 100*(float)(current-defaultMin)/(float)(max-defaultMin) - minBoost;
+
+    printf("CPU: +%d%% +%d%%\n", minBoost, currentBoost);
     SMCClose();
 
     return 0;
